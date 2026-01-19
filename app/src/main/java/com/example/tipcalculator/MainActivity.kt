@@ -3,25 +3,14 @@ package com.example.tipcalculator
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.material3.Slider
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -32,10 +21,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.tipcalculator.ui.theme.TipCalculatorTheme
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.border
-import androidx.compose.foundation.shape.RoundedCornerShape
-
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -89,11 +74,15 @@ fun TipCalculatorScreen(modifier: Modifier = Modifier) {
             onValueChange = { dishesCount.value = it },
             placeholder = "Введите количество"
         )
+
+        // Слайдер чаевых
         TipSlider(
             sliderPosition = tipPercentage.value,
             onPositionChange = { tipPercentage.value = it }
         )
 
+        // Радиокнопки скидки
+        DiscountRadioButtons(dishesCount = dishesCount.value)
     }
 }
 
@@ -119,26 +108,24 @@ fun InputRow(
 
         Spacer(modifier = Modifier.width(16.dp))
 
-        // Используем BasicTextField вместо TextField
         BasicTextField(
             value = value,
             onValueChange = onValueChange,
             modifier = Modifier
                 .weight(0.6f)
                 .background(
-                    color = Color(0xFFE75480),  // Розовый фон
-                    shape = RoundedCornerShape(4.dp)  // Закругленные углы
+                    color = Color(0xFFE75480),
+                    shape = RoundedCornerShape(4.dp)
                 )
                 .border(
                     width = 1.dp,
-                    color = Color(0xFFE75480),  // Розовая рамка
+                    color = Color(0xFFE75480),
                     shape = RoundedCornerShape(4.dp)
                 )
                 .padding(horizontal = 12.dp, vertical = 16.dp),
             textStyle = MaterialTheme.typography.bodyLarge.copy(color = Color.Black),
             singleLine = true,
             decorationBox = { innerTextField ->
-                // Показываем placeholder если текст пустой
                 if (value.isEmpty()) {
                     Text(
                         text = placeholder,
@@ -160,13 +147,11 @@ fun TipSlider(sliderPosition: Float, onPositionChange: (Float) -> Unit) {
             .padding(vertical = 10.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        // Заголовок
         Text(
             text = "Чаевые: ${sliderPosition.toInt()}%",
             style = MaterialTheme.typography.bodyLarge
         )
 
-        // Подписи 0 и 25
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
@@ -175,12 +160,61 @@ fun TipSlider(sliderPosition: Float, onPositionChange: (Float) -> Unit) {
             Text(text = "25")
         }
 
-        // Сам слайдер (как в лабораторной, но диапазон 0-25)
         Slider(
             modifier = Modifier.padding(horizontal = 10.dp),
-            valueRange = 0f..25f,  // Диапазон для чаевых
+            valueRange = 0f..25f,
             value = sliderPosition,
             onValueChange = onPositionChange
+        )
+    }
+}
+
+@Composable
+fun DiscountRadioButtons(dishesCount: String) {
+    val discount = when (val count = dishesCount.toIntOrNull() ?: 0) {
+        0 -> 0
+        in 1..2 -> 3
+        in 3..5 -> 5
+        in 6..10 -> 7
+        else -> 10
+    }
+
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Text(
+            text = "Скидка:",
+            style = MaterialTheme.typography.bodyLarge
+        )
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            DiscountRadioButton(percent = 3, selected = discount == 3)
+            DiscountRadioButton(percent = 5, selected = discount == 5)
+            DiscountRadioButton(percent = 7, selected = discount == 7)
+            DiscountRadioButton(percent = 10, selected = discount == 10)
+        }
+
+
+    }
+}
+
+@Composable
+fun DiscountRadioButton(percent: Int, selected: Boolean) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        RadioButton(
+            selected = selected,
+            onClick = { },
+            enabled = false
+        )
+        Text(
+            text = "$percent%",
+            modifier = Modifier.padding(start = 4.dp)
         )
     }
 }
